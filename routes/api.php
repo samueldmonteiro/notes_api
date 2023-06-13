@@ -36,4 +36,4 @@ Route::controller(AuthController::class)->prefix('auth')->name('auth.')->middlew
 
 Route::apiResource('notas', NoteController::class)->names('notes')->parameter('notas', 'note')->middleware(['auth:api']);
 
-Route::apiResource('usuarios', UserController::class)->names('users')->parameter('usuarios', 'user');
+Route::apiResource('usuarios', UserController::class)->names('users')->parameter('usuarios', 'user')->middleware(['auth:api']);

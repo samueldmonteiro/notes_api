@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\NoteResource;
+use App\Http\Resources\UserResource;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -26,15 +29,27 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(int $id)
     {
-        //
+        if (!$user = User::find($id)) {
+            return $this->json(['error' => 'User not found', 'user' => null], 404);
+        }
+
+        if (auth()->id() !== $user->id) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        return $this->json([
+            'message' => 'User found',
+            'user' => new UserResource($user),
+            'notes' => NoteResource::collection($user->notes)
+        ]);
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, User $user)
     {
         //
     }
@@ -42,7 +57,7 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
         //
     }

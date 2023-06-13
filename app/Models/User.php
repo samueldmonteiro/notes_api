@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use DateTime;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -32,6 +35,13 @@ class User extends Authenticatable implements JWTSubject
     protected $hidden = [
         'password',
         'remember_token',
+        'admin',
+        'updated_at',
+        'email_verified_at'
+    ];
+
+    protected $appends = [
+        'is_admin'
     ];
 
     /**
@@ -43,6 +53,20 @@ class User extends Authenticatable implements JWTSubject
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    protected function isAdmin(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => ($this->admin) ? true : false
+        );
+    }
+
+    protected function createdAt(): Attribute
+    {
+        return Attribute::make(
+            get: fn (string $value) => (new DateTime($value))->format('Y-m-d H:i:s')
+        );
+    }
 
     public function notes()
     {
