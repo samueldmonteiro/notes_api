@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserRequest;
 use App\Http\Resources\NoteResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -15,15 +17,30 @@ class UserController extends Controller
      */
     public function index()
     {
-        //
+        return $this->json([
+            'message' => 'All users',
+            'users' => UserResource::collection(User::all())
+        ]);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(UserRequest $request)
     {
-        //
+        $user = User::make($request->validated());
+        $user->password = Hash::make($request->password);
+        $user->save();
+
+        $token = auth()->login($user);
+        return $this->json([
+            'message' => 'User created successfully',
+            'user' => new UserResource($user),
+            'authorisation' => [
+                'token' => $token,
+                'type' => 'bearer',
+            ]
+        ]);
     }
 
     /**
@@ -42,7 +59,7 @@ class UserController extends Controller
         return $this->json([
             'message' => 'User found',
             'user' => new UserResource($user),
-            'notes' => NoteResource::collection($user->notes)
+            'notes' => NoteResource::collection($user->notes()->get())
         ]);
     }
 

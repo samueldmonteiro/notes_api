@@ -28,7 +28,12 @@ class NoteController extends Controller
      */
     public function store(NoteRequest $request)
     {
-        return $this->json(['status' => true]);
+        $note = Note::make($request->validated());
+        auth()->user()->notes()->save($note);
+        return $this->json([
+            'message' => 'Successfully created note',
+            'note' => new NoteResource($note)
+        ]);
     }
 
     /**
@@ -54,9 +59,23 @@ class NoteController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Note $note)
+    public function update(NoteRequest $request, int $id)
     {
-        //
+        if (!$note = Note::find($id)) {
+            return $this->json(['error' => 'note not found'], 404);
+        }
+
+        if (auth()->id() !== $note->user()->first()->id) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        };
+
+        $note->update($request->validated());
+        $note->save();
+
+        return $this->json([
+            'message' => 'Successfully updated note',
+            'note' => new NoteResource($note)
+        ]);
     }
 
     /**
@@ -64,6 +83,13 @@ class NoteController extends Controller
      */
     public function destroy(Note $note)
     {
-        //
+        if (auth()->id() !== $note->user->id) {
+            return $this->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $note->delete();
+        return $this->json([
+            'message' => 'Deleted note!'
+        ]);
     }
 }

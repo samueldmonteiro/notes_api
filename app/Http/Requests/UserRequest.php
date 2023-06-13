@@ -3,15 +3,16 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Hash;
 
-class NoteRequest extends ApiRequest
+class UserRequest extends ApiRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return auth()->check();
+        return true;
     }
 
     /**
@@ -21,12 +22,10 @@ class NoteRequest extends ApiRequest
      */
     public function rules(): array
     {
-        $method = $this->method();
-
-        if ($method == 'POST' || $method == 'PUT') return [
-            'title' => ['required', 'string', 'min:4', 'max:30'],
-            'content' => ['required', 'string', 'min:4', 'max:10000'],
-            'color' => ['required', 'max:15', 'regex:/^#([a-f0-9]{6}|[a-f0-9]{3})$/i']
+        return [
+            'name' => 'required|string|min:3|max:30',
+            'email' => 'required|email|max:30|unique:users',
+            'password' => 'required|min:5|max:100'
         ];
     }
 }
